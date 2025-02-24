@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 7467359614104348485}
   - component: {fileID: 6166932354844215954}
   - component: {fileID: 3498022682660157222}
-  - component: {fileID: 7323588375639865167}
-  - component: {fileID: 9178575750722388099}
+  - component: {fileID: 5296457193525428868}
+  - component: {fileID: 6825431297172054295}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -111,31 +111,10 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 0
---- !u!114 &7323588375639865167
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2504738720751999016}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ef7b2f103180484cb6fba0185a4a380, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controlLeft: 97
-  controlRight: 100
-  controlUp: 119
-  controlDown: 115
-  playerID: 0
-  playerColor: {r: 0, g: 0, b: 0, a: 0}
-  thisRigidbody2D: {fileID: 3498022682660157222}
-  thisCircleCollider2D: {fileID: 9178575750722388099}
-  isCollidingWithEnviroment: 0
---- !u!70 &9178575750722388099
-CapsuleCollider2D:
+--- !u!58 &5296457193525428868
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -143,7 +122,7 @@ CapsuleCollider2D:
   m_GameObject: {fileID: 2504738720751999016}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: e111654b1cd562b46a5b997bd075a4d3, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -167,5 +146,38 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1, y: 1}
-  m_Direction: 0
+  serializedVersion: 2
+  m_Radius: 0.5
+--- !u!114 &6825431297172054295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2504738720751999016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c226f85cab4020458a49d4369ff4711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controlLeft: 97
+  controlRight: 100
+  controlUp: 119
+  controlDown: 115
+  InPhysicsMode: 0
+  PhysicsFrames: 0
+  inContactWithEnviroment: 0
+  energyCurrent: 3
+  energyMaximum: 3
+  energyIncrement: 0.02
+  dtTime: 20
+  playerID: 0
+  ColorNonPhysics: {r: 1, g: 0.2783019, b: 0.2783019, a: 0}
+  ColorYesPhysics: {r: 0.6226415, g: 0.18503025, b: 0.18503025, a: 0}
+  statMoveSpeed: 5
+  statJumpForce: 8
+  statDashForce: 300
+  thisRigidbody2D: {fileID: 3498022682660157222}
+  thisCircleCollider2D: {fileID: 5296457193525428868}
+  NonPhysicsMaterial: {fileID: 6200000, guid: e111654b1cd562b46a5b997bd075a4d3, type: 2}
+  YesPhysicsMaterial: {fileID: 6200000, guid: b824d1d9917ae354582e23609e6e1300, type: 2}

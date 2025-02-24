@@ -16,126 +16,188 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private KeyCode controlUp = KeyCode.W;
     [SerializeField] private KeyCode controlDown = KeyCode.S;
 
-    //Dashes
-    private bool contact = false;
-    private int contactTime = 0; //Frames/Ticks since the player has been in contect with a surface
-    private int dashesMaximum = 3; //The maximum amount of dashes
-    private int dashesCurrent; //The player's current amount of dashes
-    private int dashCooldownCurrent = 0; //Current progress on dash cooldown
-    private float dashesCooldownSpeed = 20; //Frames required for dash cooldown
- 
+    //Player States
+    public bool InPhysicsMode = false;  //If the player is in physics mode or non-physics mode
+    public int PhysicsFrames = 0;       //How many frames are left for physics mode.
 
+    public bool inContactWithEnviroment; //If the player is in contact with a enviromental object.
 
-    //PlayerInfo
+    //Energy
+    public float energyCurrent;   //Player's current energy. Decimals is progress to next energy refill.
+    public int energyMaximum;     //Players maximum potential energy.
+    public float energyIncrement; //The cooldown rate of energy. Increased by this amount eahc fixed tick.
+
+    //Double Tap Detection
+    [SerializeField] private float dtTime; //The length of fixed ticks between taps to register.
+
+    private int dtLeft = 0;
+    private int dtLeftTime = 0;
+
+    private int dtRight = 0;
+    private int dtRightTime = 0;
+
+    //Player Identification
     public int playerID;
-    public Color playerColor;
 
-    //ComponentReferences
+    //Player Colors
+    public Color ColorNonPhysics;
+    public Color ColorYesPhysics;
+
+    //Player Stats
+    public float statMoveSpeed;
+    public float statJumpForce;
+    public float statDashForce;
+
+    //Component References
     [SerializeField] private Rigidbody2D thisRigidbody2D;
-    [SerializeField]  private CapsuleCollider2D thisCircleCollider2D;
+    [SerializeField] private CircleCollider2D thisCircleCollider2D;
 
-    //DoubletapDetection
-    private int dtTimer = 200; //Frames to detect the 2nd tap
-
-    private int dtLeftTaps;
-    private int dtLeftTimer;
-
-    //Collision
-    public bool isCollidingWithEnviroment;
-
-    //UI
-
+    [SerializeField] private PhysicsMaterial2D NonPhysicsMaterial; //The rigidbody physics material when in non-physics mode.
+    [SerializeField] private PhysicsMaterial2D YesPhysicsMaterial; //The rigidbody physics material when in physics mode.
 
     // Start is called before the first frame update
     void Start()
     {
-        dashesCurrent = dashesMaximum;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Jump
-        if (Input.GetKeyDown(controlUp) && dashesCurrent > 0)
+        //Jumping (Dosent work in fixed update)
+        if (Input.GetKeyDown(controlUp) && energyCurrent >= 1) //Check for energy as well
         {
-            Debug.Log("Jumping");
-            dashesCurrent -= 1;
-            thisRigidbody2D.AddForce(new Vector2(0, 300)); //Add upwards force
-        }
-
-        //Recharge Dashes
-        if((dashesCurrent < dashesMaximum) && isCollidingWithEnviroment == true)
-        {
-            Debug.Log("RechargingDashes");
-            dashCooldownCurrent += 1;
-            if(dashCooldownCurrent >= dashesCooldownSpeed)
+            if (InPhysicsMode == false) //If not in physic mode, jump normally
             {
-                dashCooldownCurrent = 0;
-                dashesCurrent += 1;
+                energyCurrent -= 1;
+                thisRigidbody2D.velocity = new Vector2(thisRigidbody2D.velocity.x, statJumpForce);
+            }
+
+            if (InPhysicsMode == true && PhysicsFrames == 0) //Extra checks are required for escaping physics mode via jumping
+            {
+                energyCurrent -= 1;
+                InPhysicsMode = false;
+                thisRigidbody2D.velocity = new Vector2(thisRigidbody2D.velocity.x, statJumpForce);
             }
         }
 
-
-        //Dashes
-
-        //Left Dash =======================================================
-        //Detect tap
-        if(Input.GetKeyDown(controlLeft) && dashesCurrent > 0)
+        //Dashing Detection
+        if(InPhysicsMode == false)
         {
-            dtLeftTaps += 1;
-            Debug.Log("TapLeft");
+            //Left Dashing
+            if(Input.GetKeyDown(controlLeft) && energyCurrent >= 1)
+            {
+                dtLeft += 1;
+            }
+            if(dtLeft >= 2)
+            {
+                energyCurrent -= 1;
+                InPhysicsMode = true;
+                thisRigidbody2D.AddForce(new Vector2(-statDashForce, 0));
+            }
+
+            //Right Dashing
+            if (Input.GetKeyDown(controlRight) && energyCurrent >= 1)
+            {
+                dtRight += 1;
+            }
+            if (dtRight >= 2)
+            {
+                energyCurrent -= 1;
+                InPhysicsMode = true;
+                thisRigidbody2D.AddForce(new Vector2(statDashForce, 0));
+            }
         }
 
-        //If their is more than 1 tap, increase timer
-        if(dtLeftTaps > 0)
+        //Update Physics Material and colours based on physics mode.
+        if(InPhysicsMode == false)
         {
-            dtLeftTimer += 1;
-        }
-
-        //If timer reaches maximum, reset taps
-        if(dtLeftTimer > dtTimer)
+            thisRigidbody2D.sharedMaterial = NonPhysicsMaterial;
+            gameObject.GetComponent<Renderer>().material.color = ColorNonPhysics;
+        } else
         {
-            dtLeftTaps = 0;
-            dtLeftTimer = 0;
+            thisRigidbody2D.sharedMaterial = YesPhysicsMaterial;
+            gameObject.GetComponent<Renderer>().material.color = ColorYesPhysics;
         }
-
-        //If another tap is found before timer resets, apply dash
-        if(dtLeftTaps >= 2 && dashesCurrent > 0)
-        {
-            dashesCurrent -= 1;
-            dtLeftTaps = 0;
-            dtLeftTimer = 0;
-            Debug.Log("Dash Left");
-            thisRigidbody2D.AddForce(new Vector2(-300, 0)); //Add left force
-        }
-
-
-
 
     }
 
     void FixedUpdate()
     {
-        //Left Movement
-        if (Input.GetKey(controlLeft))
+        //Non-Physics Movement
+        if(InPhysicsMode == false) //Check if the player should be capable of movement
         {
-            thisRigidbody2D.AddForce(new Vector2(-8, 0)); //Add left force
+
+            //Left Right movement
+            //Determine move direction
+            int moveDirection = 0;
+            if (Input.GetKey(controlLeft))
+            {
+                moveDirection += -1;
+            }
+            if (Input.GetKey(controlRight))
+            {
+                moveDirection += 1;
+            }
+
+            //If trying to move, apply it. To make the character not roll, set EQUALS and not ADDITIVE.
+            if (moveDirection != 0)
+            {
+                thisRigidbody2D.velocity = new Vector2(moveDirection * statMoveSpeed, thisRigidbody2D.velocity.y);
+            } else {
+                thisRigidbody2D.velocity = new Vector2(0, thisRigidbody2D.velocity.y);
+            }
+        }
+        
+        //If the player is motionless or close to motionless in physics mode, set back to non-physics mode.
+        if(InPhysicsMode == true && (thisRigidbody2D.velocity.x < 1 && thisRigidbody2D.velocity.x > -1) && (thisRigidbody2D.velocity.y < 1 && thisRigidbody2D.velocity.y > -1))
+        {
+            InPhysicsMode = false;
         }
 
-        //Right Movement
-        if (Input.GetKey(controlRight))
+        //Update double tap timers
+        if(dtLeft >= 1)
         {
-            thisRigidbody2D.AddForce(new Vector2(8, 0)); //Add right force
+            dtLeftTime += 1;
+            if(dtLeftTime >= dtTime)
+            {
+                dtLeft = 0;
+                dtLeftTime = 0;
+            }
         }
+
+        if (dtRight >= 1)
+        {
+            dtRightTime += 1;
+            if (dtRightTime >= dtTime)
+            {
+                dtRight = 0;
+                dtRightTime = 0;
+            }
+        }
+
+        //Restore Stamina
+        if(inContactWithEnviroment == true)
+        {
+            if(energyCurrent < energyMaximum)
+            {
+                energyCurrent += energyIncrement; //If below, add the increment.
+            }
+            if(energyCurrent > energyMaximum)
+            {
+                energyCurrent = energyMaximum; //If above, lower to make it exact.
+            }
+        }
+
 
     }
 
-    //Detect collision between the player and the enviroment
+    //Collison Detection
     void OnCollisionStay2D(Collision2D col)
     {
         if (col.gameObject.CompareTag("Enviroment"))
         {
-            isCollidingWithEnviroment = true;
+            inContactWithEnviroment = true;
         }
     }
 
@@ -143,7 +205,7 @@ public class PlayerController : MonoBehaviour
     {
         if (col.gameObject.CompareTag("Enviroment"))
         {
-            isCollidingWithEnviroment = false;
+            inContactWithEnviroment = false;
         }
     }
 }
