@@ -160,10 +160,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c226f85cab4020458a49d4369ff4711, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controlLeft: 97
-  controlRight: 100
-  controlUp: 119
-  controlDown: 115
+  controlLeft: 0
+  controlRight: 0
+  controlUp: 0
+  controlDown: 0
   InPhysicsMode: 0
   PhysicsFrames: 0
   inContactWithEnviroment: 0
@@ -172,11 +172,9 @@ MonoBehaviour:
   energyIncrement: 0.02
   dtTime: 20
   playerID: 0
-  ColorNonPhysics: {r: 1, g: 0.2783019, b: 0.2783019, a: 0}
-  ColorYesPhysics: {r: 0.6226415, g: 0.18503025, b: 0.18503025, a: 0}
-  statMoveSpeed: 5
-  statJumpForce: 8
-  statDashForce: 300
+  ColorNonPhysics: {r: 1, g: 1, b: 1, a: 0}
+  ColorYesPhysics: {r: 0.6792453, g: 0.6792453, b: 0.6792453, a: 0}
+  gameManager: {fileID: 0}
   thisRigidbody2D: {fileID: 3498022682660157222}
   thisCircleCollider2D: {fileID: 5296457193525428868}
   NonPhysicsMaterial: {fileID: 6200000, guid: e111654b1cd562b46a5b997bd075a4d3, type: 2}
