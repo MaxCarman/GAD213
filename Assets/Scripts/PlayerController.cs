@@ -59,11 +59,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PhysicsMaterial2D NonPhysicsMaterial; //The rigidbody physics material when in non-physics mode.
     [SerializeField] private PhysicsMaterial2D YesPhysicsMaterial; //The rigidbody physics material when in physics mode.
 
+    //UI
+    [SerializeField] private GameObject prefabCloseUI; //Reference to ui prefab to spawn
+    [SerializeField] private GameObject thisCloseUI; //The reference to this object's close ui.
+
+
     // Start is called before the first frame update
     void Start()
     {
         staminaMaximum = gameManager.staminaMaximum;
         staminaCurrent = staminaMaximum;
+
+        //Create the close ui prefab
+        thisCloseUI = Instantiate(prefabCloseUI, gameObject.transform.position, Quaternion.identity);
+        thisCloseUI.GetComponent<CloseUIController>().playerOwner = this.gameObject;
     }
 
     // Update is called once per frame
@@ -82,18 +91,17 @@ public class PlayerController : MonoBehaviour
             if (InPhysicsMode == false) //If not in physic mode, jump normally
             {
                 staminaCurrent -= 1;
-                thisRigidbody2D.velocity = new Vector2(thisRigidbody2D.velocity.x, statJumpForce);
+                thisRigidbody2D.linearVelocity = new Vector2(thisRigidbody2D.linearVelocity.x, statJumpForce);
             }
 
             if (InPhysicsMode == true && PhysicsFrames == 0) //Extra checks are required for escaping physics mode via jumping
             {
                 staminaCurrent -= 1;
                 InPhysicsMode = false;
-                thisRigidbody2D.velocity = new Vector2(thisRigidbody2D.velocity.x, statJumpForce);
+                thisRigidbody2D.linearVelocity = new Vector2(thisRigidbody2D.linearVelocity.x, statJumpForce);
             }
         }
 
-        //Dashing Detection
         //Dashing Detection
         if (InPhysicsMode == false || InPhysicsMode == true) //Currently supports both modes, but may change so i kept this condition in.
         {
@@ -108,7 +116,7 @@ public class PlayerController : MonoBehaviour
                 dtLeft = 0;
                 staminaCurrent -= 1;
                 InPhysicsMode = true;
-                thisRigidbody2D.velocity += new Vector2(-statDashForce, 0);
+                thisRigidbody2D.linearVelocity += new Vector2(-statDashForce, 0);
             }
 
             //Right Dashing
@@ -122,7 +130,7 @@ public class PlayerController : MonoBehaviour
                 dtRight = 0;
                 staminaCurrent -= 1;
                 InPhysicsMode = true;
-                thisRigidbody2D.velocity += new Vector2(statDashForce, 0);
+                thisRigidbody2D.linearVelocity += new Vector2(statDashForce, 0);
             }
 
             //Down Dashing
@@ -136,7 +144,7 @@ public class PlayerController : MonoBehaviour
                 dtDown = 0;
                 staminaCurrent -= 1;
                 InPhysicsMode = true;
-                thisRigidbody2D.velocity += new Vector2(0, -statDashForce);
+                thisRigidbody2D.linearVelocity += new Vector2(0, -statDashForce);
             }
         }
 
@@ -152,6 +160,13 @@ public class PlayerController : MonoBehaviour
             thisCircleCollider2D.sharedMaterial = YesPhysicsMaterial;
             gameObject.GetComponent<Renderer>().material.color = ColorYesPhysics;
         }
+
+        //Update UI text and color
+        thisCloseUI.GetComponent<CloseUIController>().staminaMarker.material.color = ColorNonPhysics;
+        thisCloseUI.GetComponent<CloseUIController>().staminaText.material.color = ColorNonPhysics;
+        thisCloseUI.GetComponent<CloseUIController>().staminaText.text = "Stamina: " + staminaCurrent;
+
+
 
     }
 
@@ -176,14 +191,14 @@ public class PlayerController : MonoBehaviour
             //If trying to move, apply it. To make the character not roll, set EQUALS and not ADDITIVE.
             if (moveDirection != 0)
             {
-                thisRigidbody2D.velocity = new Vector2(moveDirection * statMoveSpeed, thisRigidbody2D.velocity.y);
+                thisRigidbody2D.linearVelocity = new Vector2(moveDirection * statMoveSpeed, thisRigidbody2D.linearVelocity.y);
             } else {
-                thisRigidbody2D.velocity = new Vector2(0, thisRigidbody2D.velocity.y);
+                thisRigidbody2D.linearVelocity = new Vector2(0, thisRigidbody2D.linearVelocity.y);
             }
         }
 
         //If the player is motionless or close to motionless in physics mode, set back to non-physics mode.
-        if (InPhysicsMode == true && (thisRigidbody2D.velocity.x < 1.5 && thisRigidbody2D.velocity.x > -1.5) && (thisRigidbody2D.velocity.y < 1.5 && thisRigidbody2D.velocity.y > -1.5))
+        if (InPhysicsMode == true && (thisRigidbody2D.linearVelocity.x < 1.5 && thisRigidbody2D.linearVelocity.x > -1.5) && (thisRigidbody2D.linearVelocity.y < 1.5 && thisRigidbody2D.linearVelocity.y > -1.5))
         {
             InPhysicsMode = false;
         }
@@ -270,11 +285,11 @@ public class PlayerController : MonoBehaviour
         if(col.gameObject.GetComponent<Rigidbody2D>() != null && InPhysicsMode == false) //Check if null and in non-physics mode.
         {
             Rigidbody2D colRigidbody2D = col.gameObject.GetComponent<Rigidbody2D>();
-            if ((colRigidbody2D.velocity.x > 1.5f || colRigidbody2D.velocity.x < -1.5f) || (colRigidbody2D.velocity.y > 1.5f || colRigidbody2D.velocity.y < -1.5f)) //Check if rigidbody in motion.
+            if ((colRigidbody2D.linearVelocity.x > 1.5f || colRigidbody2D.linearVelocity.x < -1.5f) || (colRigidbody2D.linearVelocity.y > 1.5f || colRigidbody2D.linearVelocity.y < -1.5f)) //Check if rigidbody in motion.
             {
                 Debug.Log("apply velocity");
                 InPhysicsMode = true;
-                thisRigidbody2D.velocity += colRigidbody2D.velocity;
+                thisRigidbody2D.linearVelocity += colRigidbody2D.linearVelocity;
             }
         }
     }
