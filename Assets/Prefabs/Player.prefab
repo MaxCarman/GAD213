@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3498022682660157222}
   - component: {fileID: 5296457193525428868}
   - component: {fileID: 6825431297172054295}
+  - component: {fileID: 8048682560200709581}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -173,6 +174,7 @@ MonoBehaviour:
   inContactWithEnviroment: 0
   gameManager: {fileID: 0}
   staminaCurrent: 0
+  canRecoverStamina: 0
   dtTime: 20
   playerID: 0
   ColorNonPhysics: {r: 1, g: 1, b: 1, a: 0}
@@ -183,3 +185,17 @@ MonoBehaviour:
   YesPhysicsMaterial: {fileID: 6200000, guid: b824d1d9917ae354582e23609e6e1300, type: 2}
   prefabCloseUI: {fileID: 8463878687560800943, guid: fef56c7fab50fde4c9e662b7a95453e3, type: 3}
   thisCloseUI: {fileID: 0}
+--- !u!114 &8048682560200709581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2504738720751999016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10bc724382fba1e4ea8b9fe57af11135, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectIsEnviromental: 0
+  objectIsPlayer: 1

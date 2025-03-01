@@ -22,18 +22,18 @@ public class PlayerController : MonoBehaviour
 
     public bool inContactWithEnviroment; //If the player is in contact with a enviromental object.
 
-
     //Player Stats
     [SerializeField] private GameManager gameManager; //Reference to the game manager script, which unifies stats between players.
 
     private float statMoveSpeed;
     private float statJumpForce;
     private float statDashForce;
-    private float staminaMaximum;     //Players maximum potential stamina.
+    private float staminaMaximum;   //Players maximum potential stamina.
     private float staminaIncrement; //The cooldown rate of stamina. Increased by this amount each fixed tick.
 
     //Stamina
     public float staminaCurrent;   //Player's current stamina. Decimals is progress to next stamina refill.
+    public bool canRecoverStamina; //If the player should be able to recover stamina.
 
     //Double Tap Detection
     [SerializeField] private float dtTime; //The length of fixed ticks between taps to register.
@@ -62,7 +62,6 @@ public class PlayerController : MonoBehaviour
     //UI
     [SerializeField] private GameObject prefabCloseUI; //Reference to ui prefab to spawn
     [SerializeField] private GameObject thisCloseUI; //The reference to this object's close ui.
-
 
     // Start is called before the first frame update
     void Start()
@@ -103,7 +102,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //Dashing Detection
-        if (InPhysicsMode == false || InPhysicsMode == true) //Currently supports both modes, but may change so i kept this condition in.
+        if (InPhysicsMode == false || InPhysicsMode == true) //Currently supports both modes, but may change so I kept this condition in.
         {
             //Left Dashing
             if (Input.GetKeyDown(controlLeft) && staminaCurrent >= 1)
@@ -162,9 +161,10 @@ public class PlayerController : MonoBehaviour
         }
 
         //Update UI text and color
-        thisCloseUI.GetComponent<CloseUIController>().staminaMarker.material.color = ColorNonPhysics;
-        thisCloseUI.GetComponent<CloseUIController>().staminaText.material.color = ColorNonPhysics;
-        thisCloseUI.GetComponent<CloseUIController>().staminaText.text = "Stamina: " + staminaCurrent;
+        thisCloseUI.GetComponent<CloseUIController>().staminaMarker.color = ColorNonPhysics;
+        thisCloseUI.GetComponent<CloseUIController>().staminaText.color = ColorNonPhysics;
+        //thisCloseUI.GetComponent<CloseUIController>().staminaText.text = "Stamina: " + (Mathf.Round(staminaCurrent * 100) / 100.0); OLD
+        thisCloseUI.GetComponent<CloseUIController>().staminaText.text = "Stamina: " + Mathf.FloorToInt(staminaCurrent);
 
 
 
@@ -245,7 +245,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //Restore Stamina if in contact with the enviroment
-        if (inContactWithEnviroment == true)
+        if (canRecoverStamina == true)
         {
             if(staminaCurrent < staminaMaximum)
             {
@@ -257,37 +257,31 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-
-    }
-
-    //Collison Detection
-    void OnCollisionStay2D(Collision2D col)
-    {
-        //If colliding with the enviroment, set to true.
-        if (col.gameObject.CompareTag("Enviroment"))
+        //Detect enviromental collision for stamina regen
+        Collider2D[] nearbyObjects = Physics2D.OverlapCircleAll(transform.position, transform.localScale.x * 1.1f); //Make a circle collider slightly larger than the object and collects everything in it.
+        canRecoverStamina = false;
+        Debug.Log(nearbyObjects);
+        foreach (var nearbyObject in nearbyObjects)  
         {
-            inContactWithEnviroment = true;
-        }
-    }
-
-    void OnCollisionExit2D(Collision2D col)
-    {
-        //When leaving collision with the enviroment, set to false.
-        if (col.gameObject.CompareTag("Enviroment"))
-        {
-            inContactWithEnviroment = false;
+            if(nearbyObject.gameObject.GetComponent<CollisionData>() != null) //Check if it has collision scirpt.
+            {
+                if(nearbyObject.gameObject.GetComponent<CollisionData>().objectIsEnviromental == true || nearbyObject.gameObject.GetComponent<CollisionData>().objectIsPlayer == true)
+                {
+                    canRecoverStamina = true; //If they are in contact/near contact, allow stamina recovery.
+                }
+            } 
         }
     }
 
     private void OnCollisionEnter2D(Collision2D col)
     {
-        //Apply velocity to this object is another high velocity object hits it.
-        if(col.gameObject.GetComponent<Rigidbody2D>() != null && InPhysicsMode == false) //Check if null and in non-physics mode.
+        //Apply velocity to this object is another high velocity object hits it. Only do so for enviromental and player, as attacks would have their own code to handle it.
+        if(col.gameObject.GetComponent<Rigidbody2D>() != null && InPhysicsMode == false && col.gameObject.GetComponent<CollisionData>() != null) //Check if null and in non-physics mode, and has collision date object.
         {
             Rigidbody2D colRigidbody2D = col.gameObject.GetComponent<Rigidbody2D>();
-            if ((colRigidbody2D.linearVelocity.x > 1.5f || colRigidbody2D.linearVelocity.x < -1.5f) || (colRigidbody2D.linearVelocity.y > 1.5f || colRigidbody2D.linearVelocity.y < -1.5f)) //Check if rigidbody in motion.
+            if (((colRigidbody2D.linearVelocity.x > 1.5f || colRigidbody2D.linearVelocity.x < -1.5f) || (colRigidbody2D.linearVelocity.y > 1.5f || colRigidbody2D.linearVelocity.y < -1.5f)) && (col.gameObject.GetComponent<CollisionData>().objectIsEnviromental == true || col.gameObject.GetComponent<CollisionData>().objectIsPlayer == true)) //Check if rigidbody in motion and is a player/enviromental object
             {
-                Debug.Log("apply velocity");
+                //Debug.Log("apply velocity");
                 InPhysicsMode = true;
                 thisRigidbody2D.linearVelocity += colRigidbody2D.linearVelocity;
             }
