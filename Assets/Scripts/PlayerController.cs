@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
 using UnityEngine.UI;
 using TMPro;
-using UnityEditor.Experimental.GraphView;
 
 public class PlayerController : MonoBehaviour
 {
@@ -260,12 +258,11 @@ public class PlayerController : MonoBehaviour
         //Detect enviromental collision for stamina regen
         Collider2D[] nearbyObjects = Physics2D.OverlapCircleAll(transform.position, transform.localScale.x * 1.1f); //Make a circle collider slightly larger than the object and collects everything in it.
         canRecoverStamina = false;
-        Debug.Log(nearbyObjects);
         foreach (var nearbyObject in nearbyObjects)  
         {
             if(nearbyObject.gameObject.GetComponent<CollisionData>() != null) //Check if it has collision scirpt.
             {
-                if(nearbyObject.gameObject.GetComponent<CollisionData>().objectIsEnviromental == true || nearbyObject.gameObject.GetComponent<CollisionData>().objectIsPlayer == true)
+                if(nearbyObject.gameObject.GetComponent<CollisionData>().objectIsEnviromental == true || (nearbyObject.gameObject.GetComponent<CollisionData>().objectIsPlayer == true && nearbyObject.gameObject != this.gameObject)) //Check if the collision is not this object itself.
                 {
                     canRecoverStamina = true; //If they are in contact/near contact, allow stamina recovery.
                 }
